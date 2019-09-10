@@ -2,11 +2,22 @@
 #schultza.2019.9.20
 #This script places a LaunchDaemon and corresponding script to force the volume to zero when an internal speaker is selected
 #Some models of Mac use different internal audio speaker names. Change $Output $OutputSource as needed.
+#This script was built with iMacs in mind, the hardcoded audio devices in this script should reflect all models of iMac.
 
+
+#Something like: /Library/.scripts/
 scriptpath=""
+
+#Something like: NewSpeakermute.sh
 scriptname=""
+
+#Should be /Library/LaunchDaemons/
 daemonpath=""
+
+#Something like: domain.org.name.plist
 deamonname=""
+
+#Place the LaunchDaemon
 
 cat << 'EOF' > $daemonpath/$daemonname
 <?xml version="1.0" encoding="UTF-8"?>
@@ -28,9 +39,12 @@ cat << 'EOF' > $daemonpath/$daemonname
 </plist>
 EOF
 
-# Set Ownership and Permissions on the script
+# Set Ownership and Permissions on the Daemon
 chown root:wheel $daemonpath/$daemonname
 chmod 644 $daemonpath/$daemonname
+
+
+#Place the Script
 
 cat << 'EOF' > $scriptpath/$scriptname
 
@@ -55,12 +69,13 @@ if [ "$Output" = 'Built-in Output:' ] && [ "$OutputSource" = 'Internal Speakers'
   echo "Internal speakers being used, setting volume to 0"
   osascript -e "set Volume 0"
 else
-  echo "Speakers not detected"
+  echo "Internal Speakers not being used, or detected"
 fi
 
 exit 0
 
-
 EOF
+
+launchctl load $daemonpath/$daemonname
 
 exit 0
