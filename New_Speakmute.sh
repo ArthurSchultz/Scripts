@@ -1,17 +1,24 @@
 #!/bin/sh
 #schultza.2019.9.20
+#This script places a LaunchDaemon and corresponding script to force the volume to zero when an internal speaker is selected
+#Some models of Mac use different internal audio speaker names. Change $Output $OutputSource as needed.
 
-cat << 'EOF' > /Library/LaunchDaemons/edu.uwm.cts.newspeakermute.plist
+scriptpath=""
+scriptname=""
+daemonpath=""
+deamonname=""
+
+cat << 'EOF' > $daemonpath/$daemonname
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>edu.uwm.cts.newspeakermute</string>
+	<string>$daemonname</string>
 	<key>ProgramArguments</key>
 	<array>
 		<string>sh</string>
-		<string>/Library/.uwm/newspeakermute.sh</string>
+		<string>$scriptpath/$scriptname</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>
@@ -22,10 +29,10 @@ cat << 'EOF' > /Library/LaunchDaemons/edu.uwm.cts.newspeakermute.plist
 EOF
 
 # Set Ownership and Permissions on the script
-chown root:wheel /Library/LaunchDaemons/edu.uwm.cts.newspeakermute.plist
-chmod 644 /Library/LaunchDaemons/edu.uwm.cts.newspeakermute.plist
+chown root:wheel $daemonpath/$daemonname
+chmod 644 $daemonpath/$daemonname
 
-cat << 'EOF' > /Library/.uwm/newspeakermute.sh
+cat << 'EOF' > $scriptpath/$scriptname
 
 #!/bin/sh
 
