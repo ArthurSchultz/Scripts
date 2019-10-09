@@ -1,0 +1,40 @@
+#!/bin/sh
+#Schultza - 2019.10.9
+
+Console=$(scutil <<< "show State:/Users/ConsoleUser" | awk '/Name :/ && ! /loginwindow/ { print $3 }' )
+ConsoleUID=$(id -u $Console)
+Idletime=`/usr/sbin/ioreg -c IOHIDSystem | /usr/bin/awk '/HIDIdleTime/ {print int($NF/1000000000); exit}'`
+
+Idlelimit="$4"
+
+if [ "$Console" = "" ]; then
+echo "No Console Session. Exiting"
+exit 0
+else
+echo "Active Console User Detected. Checking Idle"
+fi
+
+if [ -z "$Idlelimit" ]; then
+echo "No Idlelimit Set, defaulting to 60 min (3600 Seconds)"
+Idlelimit="3600"
+else
+  echo "Idlelimt is $4 seconds"
+fi
+
+if (( $(echo "$Idletime > $Idlelimit" | bc -l) )); then
+  echo "Idle Limit Reached. Forcing idle User Session to Log out"
+  sudo -u $Console osascript -e 'tell application "loginwindow" to  «event aevtrlgo»'
+else
+  echo "Idle Limit not Reached."
+  exit 0
+fi
+Sleep 30
+
+Console2=$(scutil <<< "show State:/Users/ConsoleUser" | awk '/Name :/ && ! /loginwindow/ { print $3 }')
+if [ "$Console2" = "" ]; then
+echo "No Console Session. Exiting"
+exit 0
+else
+echo "Active Console User Detected. Even after nice exit. Forcing exit"
+ps -Ajc | grep loginwindow | awk '{print $2}' | sudo xargs kill -9
+fi
